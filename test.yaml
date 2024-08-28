@@ -1,0 +1,5 @@
+- hosts: rdp
+
+  tasks:
+  - name: hihi
+    win_shell: echo 'aaa'

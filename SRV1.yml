@@ -1,0 +1,54 @@
+---
+- name: Preparación de vulnerabilidades SRV1
+  hosts: servidor
+  become: yes
+  remote_user: anpipada
+  tasks:
+
+  - name: Instala apache latest.
+    apt:
+      name: apache2
+      update_cache: yes
+      state: latest
+
+  - name: Instala apache latest.
+    apt:
+      name: php
+      update_cache: yes
+      state: latest
+  
+  - name: Subir nuestra app
+    ansible.builtin.copy:
+      src: ./web/index.html
+      dest: /var/www/html/index.html
+
+  - name: Subir nuestra app
+    ansible.builtin.copy:
+      src: ./web/ping.php
+      dest: /var/www/html/ping.php
+
+  - name: Establecer el bit SUID en el binario de find
+    file:
+      path: /usr/bin/find
+      mode: "4755"
+
+  - name: Creates directory
+    ansible.builtin.file:
+      path: /var/www/html/ayuda
+      state: directory
+
+  - name: Ejemplo de ayuda
+    ansible.builtin.copy:
+      src: ./web/bot.txt
+      dest: /var/www/html/ayuda/bot.txt
+
+  - name: Subir nuestra app
+    ansible.builtin.copy:
+      src: ./web/lfi.php
+      dest: /var/www/html/lfi.php
+
+  handlers:
+  - name: restart apache2
+    service:
+      name: apache2
+      state: restarted

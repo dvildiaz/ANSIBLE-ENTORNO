@@ -1,0 +1,20 @@
+[Unit]
+Description=ftp
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/usr/local/sbin
+ExecStart=/usr/local/sbin/vsftpd
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=FTP_LOG
+User=root
+Group=root
+Environment=PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
+
+
+[Install]
+WantedBy=multi-user.target

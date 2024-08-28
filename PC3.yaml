@@ -1,0 +1,69 @@
+---
+- name: Install Tomcat
+  hosts: tom
+  become: true
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+
+    - name: Install Java
+      apt:
+        name: openjdk-11-jdk
+        state: latest
+
+    - name: Install tomcat
+      apt:
+        name: tomcat9
+        state: latest
+
+    - name: Install tomcat docs
+      apt:
+        name: tomcat9-docs
+        state: latest
+
+    - name: Install tomcat examples
+      apt:
+        name: tomcat9-examples
+        state: latest
+
+    - name: Install tomcat admin
+      apt:
+        name: tomcat9-admin
+        state: latest        
+    #- name: Download Tomcat
+    #  get_url:
+    #    url: "https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.54/bin/apache-tomcat-9.0.54.tar.gz"
+    #    dest: /opt/
+    #- name: Extract Tomcat
+    #  unarchive:
+    #    src: /opt/apache-tomcat-9.0.54.tar.gz
+    #    dest: /opt/
+    #    remote_src: yes
+    - name: Configuración de usuarios
+      ansible.builtin.copy:
+        src: ./web/USER.xml
+        dest: /etc/tomcat9/tomcat-users.xml
+
+    - name: Accesibilidad
+      ansible.builtin.copy:
+        src: ./web/context.xml
+        dest: /etc/tomcat9/context.xml
+
+    - name: Start Tomcat Service
+      service:
+        name: tomcat9
+        state: restarted
+        enabled: yes
+
+    - name: Instalamos cowsay para la escalada
+      apt:
+        name: cowsay
+        update_cache: yes
+        state: latest
+  
+      - name: Agregar entrada al archivo sudoers
+        lineinfile:
+          dest: /etc/sudoers
+          line: "www-data ALL=(ALL) NOPASSWD: /usr/games/cowsay"
+        validate: 'visudo -cf %s'

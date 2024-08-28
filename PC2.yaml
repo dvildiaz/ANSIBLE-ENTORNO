@@ -1,0 +1,84 @@
+---
+- name: Crear vulnerabilidades en windows
+  hosts: rdp
+  gather_facts: no
+  tasks:
+    - name: Crear carpeta temp en C
+      win_file:
+        path: C:\temp
+        state: directory
+
+    - name: Descargar el instalador de 7-Zip
+      win_get_url:
+        url: https://www.7-zip.org/a/7z1900-x64.msi
+        dest: C:\temp\7z1900-x64.msi
+
+    - name: Instalar 7-Zip
+      win_package:
+        path: C:\temp\7z1900-x64.msi
+        state: present
+      register: install_result
+
+    - name: Verificar si 7-Zip está instalado
+      win_stat:
+        path: C:\Program Files\7-Zip
+      register: installed_check
+
+    - name: Establecer la variable de entorno PATH
+      win_path:
+        elements:
+          - "C:\\Program Files\\7-Zip\\"
+        state: present
+
+    - name: Descargar el instalador de XAMPP
+      win_get_url:
+        url: https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/7.4.28/xampp-windows-x64-7.4.28-1-VC15-installer.exe/download
+        dest: C:\temp\xampp-installer.exe
+
+    - name: Instalar XAMPP
+      win_command: C:\temp\xampp-installer.exe --mode unattended
+      args:
+        creates: C:\xampp
+
+    - name: Descargar WordPress
+      win_get_url:
+        url: https://wordpress.org/wordpress-4.6.zip
+        dest: C:\xampp\htdocs\wordpress-4.6.zip
+
+
+    - name: Descomprimir la app
+      win_command: 7z x "C:\xampp\htdocs\wordpress-4.6.zip" -oC:\xampp\htdocs\"
+
+    - name: Ejecutar archivo .bat en segundo plano
+      win_shell: |
+        Start-Process -FilePath "C:\xampp\apache_start.bat" -WindowStyle Hidden
+      async: 60
+      poll: 0
+
+    - name: Ejecutar archivo .bat en segundo plano
+      win_shell: |
+        Start-Process -FilePath "C:\xampp\mysql_start.bat" -WindowStyle Hidden
+      async: 60
+      poll: 0
+    - name: Establecer la variable de entorno PATH mysql
+      win_path:
+        elements:
+          - "C:\\xampp\\mysql\\bin\\"
+    - name: Actualizar archivo mysql
+      win_template:
+        src: ./web/my.ini
+        dest: C:\xampp\mysql\data\my.ini
+
+    - name: Crear base de datos
+      win_command: mysql -u root -e "CREATE DATABASE IF NOT EXISTS wordpress;"
+
+    - name: Configurar usuario de base de datos
+      win_command: mysql -u root -e "CREATE USER IF NOT EXISTS wordpressuser@localhost IDENTIFIED BY 'anpipada';"
+
+    - name: Otorgar permisos al usuario de la base de datos
+      win_command: mysql -u root -e "GRANT ALL PRIVILEGES ON wordpress.* TO wordpressuser@localhost;"
+
+    - name: Actualizar archivo wp-config.php
+      win_template:
+        src: ./web/wp-config.php.j2
+        dest: C:\xampp\htdocs\wordpress\wp-config.php

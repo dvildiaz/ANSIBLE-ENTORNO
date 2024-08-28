@@ -1,0 +1,12 @@
+[dmz]
+10.10.20.2 ansible_ssh_user=anpipada
+10.10.20.3 ansible_ssh_user=anpipada
+
+#[ftp]
+#10.10.10.2 ansible_ssh_user=anpipada
+#
+#[rdp]
+#10.10.10.3 ansible_ssh_user=anpipada
+#
+#[tom]
+#10.10.10.4 ansible_ssh_user=anpipada

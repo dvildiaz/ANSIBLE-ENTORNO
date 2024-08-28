@@ -1,0 +1,101 @@
+---
+- name: Instalación del FTP vulnerable
+  hosts: ftp
+  become: yes
+  remote_user: anpipada
+
+  tasks:
+  - name: Instala git latest.
+    apt:
+      name: git
+      update_cache: yes
+      state: latest
+
+  - name: Instalar el deb
+    command:  git clone https://github.com/nikdubois/vsftpd-2.3.4-infected.git
+    become: yes
+    ignore_errors: true
+
+  - name: Instala build-essential latest.
+    apt:
+      name: build-essential
+      update_cache: yes
+
+  - name: Subir nuestra app
+    ansible.builtin.copy:
+      src: ./deb/Makefile
+      dest: /home/anpipada/vsftpd-2.3.4-infected/Makefile
+
+  - name: Instalar el deb
+    command: chmod +x /home/anpipada/vsftpd-2.3.4-infected/
+    become: yes
+
+  - name: Hacer el make
+    command: make -C /home/anpipada/vsftpd-2.3.4-infected/
+    become: yes
+
+  - name: Instalar el deb
+    command: useradd nobody
+    become: yes
+    ignore_errors: true
+
+  - name: Instalar el deb
+    command:  mkdir /usr/share/empty
+    become: yes
+    ignore_errors: true
+
+  - name: Copi 1
+    command: cp /home/anpipada/vsftpd-2.3.4-infected/vsftpd /usr/local/sbin/vsftpd 
+    become: yes
+    ignore_errors: true
+
+  - name: Copi 2
+    command: cp /home/anpipada/vsftpd-2.3.4-infected/vsftpd.8 /usr/local/man/man8 
+    become: yes
+    ignore_errors: true
+
+  - name: Copi 3
+    command: cp /home/anpipada/vsftpd-2.3.4-infected/vsftpd.conf.5 /usr/local/man/man5
+    become: yes
+    ignore_errors: true
+
+  - name: Copi 4
+    command: cp /home/anpipada/vsftpd-2.3.4-infected/vsftpd.conf /etc/
+    become: yes
+    ignore_errors: true
+  
+  - name: Crear FTP
+    command: mkdir /var/ftp/
+    become: yes
+    ignore_errors: true
+
+  - name: Instalar el deb
+    command: useradd -d /var/ftp ftp
+    become: yes
+    ignore_errors: true
+
+  - name: Permisos a root
+    command: chown root:root /var/ftp
+    become: yes
+    ignore_errors: true
+
+  - name: Permisos a root
+    command: chmod og-w /var/ftp
+    become: yes
+    ignore_errors: true
+
+  - name: Subir nuestra app
+    ansible.builtin.copy:
+      src: ./deb/ftp.service
+      dest: /etc/systemd/system/ftp.service
+
+  - name: Recargamos demonios
+    command: systemctl daemon-reload
+    become: yes
+    ignore_errors: true
+
+  handlers:
+  - name: start ftp
+    service:
+      name: ftp
+      state: started

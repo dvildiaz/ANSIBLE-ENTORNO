@@ -1,0 +1,21 @@
+redinterna:
+  hosts:
+    ftp:
+      ansible_host: 10.10.10.2
+      ansible_ssh_user: anpipada
+    tom:
+      ansible_host: 10.10.10.3
+      ansible_ssh_user: anpipada
+    rdp:
+      ansible_host: 192.168.0.33
+      ansible_connection: winrm
+      ansible_winrm_transport: ntlm
+      ansible_user: anpipada
+      ansible_password: anpipada777-
+      ansible_winrm_server_cert_validation: ignore
+dmz:
+  hosts:
+    servidor:
+      ansible_host: 10.10.20.2
+      ansible_ssh_user: anpipada
+      http_port: 80
